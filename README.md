@@ -37,11 +37,13 @@ bg-remover/
 │ └── birefnet_model.py
 ├── routes/
 │ ├── init.py
-│ └── remove_bg.py\
+│ └── remove_bg.py
 └── utils/
-├── init.py
-├── image_utils.py
-└── param_utils.py
+│ ├── init.py
+│ ├── image_utils.py
+│ └── param_utils.py
+├── .gitgnore
+└── README.MD
 ```
 
 - **app.py:** Entry point for the Flask application.
