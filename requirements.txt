@@ -5,6 +5,6 @@ torchvision
 torchaudio
 transformers
 requests
-timm
+timm==1.0.10
 einops
 kornia
