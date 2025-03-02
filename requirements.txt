@@ -5,3 +5,6 @@ torchvision
 torchaudio
 transformers
 requests
+timm
+einops
+kornia
