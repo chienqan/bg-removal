@@ -1,8 +1,9 @@
 module.exports = {
   apps: [{
     name: 'bg-remover',
-    script: 'app.py',
-    interpreter: 'python3',
+    script: 'gunicorn',
+    args: '--bind 0.0.0.0:5000 app:app',
+    interpreter: './.venv/bin/python3',
     cwd: __dirname,
     env: {
       FLASK_ENV: 'production'
