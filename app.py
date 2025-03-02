@@ -2,6 +2,10 @@
 
 from flask import Flask
 from routes import register_routes
+import warnings
+
+# Ignore warning message from timm packages
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 app = Flask(__name__)
 
