@@ -3,9 +3,13 @@ import sys
 import argparse
 import time
 import numpy as np
+import warnings
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 from models.bg_remover import remove
+
+# Filter out FutureWarnings to suppress timm deprecation warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def compare_images(original_path, result_path, comparison_path, title=None):
     """

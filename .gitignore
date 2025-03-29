@@ -78,3 +78,6 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Output folders
+test_outputs_*/
