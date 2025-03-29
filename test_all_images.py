@@ -8,14 +8,13 @@ def test_with_file(image_path, output_path):
     Test background removal with a local image file
     """
     try:
-        # Open and process the image
+        # Process the image
         print(f"Testing with file: {image_path}")
-        with Image.open(image_path) as img:
-            # Process the image
-            result = remove(img)
-            # Save the result
-            result.save(output_path, 'PNG')
-            print(f"Success! Output saved to: {output_path}")
+        result = remove(image_path)
+        
+        # Save the result
+        result.save(output_path, 'PNG')
+        print(f"Success! Output saved to: {output_path}")
     except Exception as e:
         print(f"Error processing {image_path}: {str(e)}")
 
