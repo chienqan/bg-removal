@@ -1,48 +1,96 @@
+#!/usr/bin/env python3
 """
-Background Removal API Server
+Background Removal Server - Flask application for removing backgrounds from images.
 
-This server provides a REST API for removing backgrounds from images
-using the BiRefNet model with preservation of natural elements.
+This server provides a REST API for background removal using the BiRefNet model
+and custom sky detection algorithms.
 
-Run with:
-    python app.py
+To run the server:
+    python app.py [--port PORT] [--host HOST] [--debug]
 """
 
 import os
+import sys
+import argparse
 import logging
 from flask import Flask
-from routes import register_routes
-from models.birefnet_model import birefnet_model  # Import to ensure model is loaded
+from flask_cors import CORS
+from dotenv import load_dotenv
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Load environment variables from .env file if present
+load_dotenv()
 
 def create_app():
-    """Application factory function to create and configure the Flask app"""
+    """
+    Create and configure the Flask application.
+    
+    Returns:
+        Flask application instance
+    """
     # Initialize Flask app
     app = Flask(__name__)
     
-    # Register all route blueprints
-    register_routes(app)
+    # Enable CORS
+    CORS(app)
     
-    # Log that the app is initialized
-    logger.info("Flask application initialized")
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler(sys.stdout)]
+    )
     
-    # Verify model is loaded
-    if birefnet_model is not None:
-        logger.info("BiRefNet model loaded successfully")
-    else:
-        logger.error("BiRefNet model failed to load")
+    app.logger.info("Initializing Background Removal Server...")
+    
+    # Load model
+    try:
+        from models.birefnet_model import birefnet_model
+        if birefnet_model is not None:
+            app.logger.info("✅ BiRefNet model loaded successfully")
+        else:
+            app.logger.warning("⚠️ BiRefNet model could not be loaded, will use fallback method")
+    except Exception as e:
+        app.logger.error(f"❌ Error loading BiRefNet model: {str(e)}")
+        app.logger.warning("⚠️ Will use fallback method for background removal")
+    
+    # Register blueprints
+    from routes import register_blueprints
+    register_blueprints(app)
+    
+    app.logger.info("✅ Server initialization complete")
     
     return app
 
-if __name__ == '__main__':
-    # Get port from environment variable or use default
-    port = int(os.environ.get('PORT', 5000))
+def parse_arguments():
+    """Parse command line arguments"""
+    parser = argparse.ArgumentParser(description="Background Removal Server")
     
-    # Create the app
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 5000)),
+                        help="Port to run the server on (default: 5000 or PORT env var)")
+    parser.add_argument("--host", type=str, default=os.environ.get("HOST", "0.0.0.0"),
+                        help="Host to bind the server to (default: 0.0.0.0 or HOST env var)")
+    parser.add_argument("--debug", action="store_true",
+                        help="Run server in debug mode")
+    
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    # Parse command line arguments
+    args = parse_arguments()
+    
+    # Create the Flask app
     app = create_app()
     
+    # Print startup message
+    print(f"""
+    ======================================================
+    📷 Background Removal Server
+    ======================================================
+    🌐 Server running at: http://{args.host}:{args.port}
+    🔧 Debug mode: {'✅ Enabled' if args.debug else '❌ Disabled'}
+    🛠️  Press Ctrl+C to stop the server
+    ======================================================
+    """)
+    
     # Run the server
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host=args.host, port=args.port, debug=args.debug)
