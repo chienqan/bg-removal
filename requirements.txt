@@ -9,3 +9,5 @@ timm
 einops
 kornia
 gunicorn
+flask_cors
+dotenv

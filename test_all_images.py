@@ -5,7 +5,7 @@ import time
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
-from models.bg_remover import remove, is_sky_region
+from models.bg_remover import remove
 
 def compare_images(original_path, result_path, comparison_path, title=None):
     """

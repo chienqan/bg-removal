@@ -16,9 +16,13 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 from dotenv import load_dotenv
+import warnings
 
 # Load environment variables from .env file if present
 load_dotenv()
+
+# Filter out FutureWarnings to suppress timm deprecation warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def create_app():
     """
@@ -54,8 +58,8 @@ def create_app():
         app.logger.warning("⚠️ Will use fallback method for background removal")
     
     # Register blueprints
-    from routes import register_blueprints
-    register_blueprints(app)
+    from routes import register_routes
+    register_routes(app)
     
     app.logger.info("✅ Server initialization complete")
     
