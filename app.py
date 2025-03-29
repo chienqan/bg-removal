@@ -1,4 +1,4 @@
-# app.py: File entrypoint của ứng dụng Flask
+# app.py: Flask application entry point
 import warnings
 warnings.filterwarnings('ignore')
 

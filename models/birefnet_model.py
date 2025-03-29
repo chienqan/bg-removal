@@ -1,4 +1,4 @@
-# model/birefnet_model.py: Load model BiRefNet qua transformers
+# model/birefnet_model.py: Load BiRefNet model via transformers
 
 from transformers import AutoModelForImageSegmentation
 from config import MODEL_NAME, DEVICE
@@ -12,5 +12,5 @@ def load_birefnet_model():
         model.half()
     return model
 
-# Khởi tạo model một lần và sử dụng cho toàn project
+# Initialize model once and use it throughout the project
 birefnet_model = load_birefnet_model()

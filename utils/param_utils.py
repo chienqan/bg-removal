@@ -1,26 +1,26 @@
 def compute_target_size(original_size, size_param):
     """
-    Tính toán kích thước mục tiêu (width, height) dựa trên kích thước ảnh gốc và tham số size.
+    Calculate target size (width, height) based on original image size and size parameter.
 
-    Nếu size_param là None hoặc thuộc các giá trị: "full", "4k", "auto",
-    thì không resize (trả về None).
+    If size_param is None or belongs to values: "full", "4k", "auto",
+    then no resize is performed (returns None).
 
-    Các giá trị khác sẽ được quy đổi thành số megapixels mục tiêu:
+    Other values will be converted to target megapixels:
       - "preview": 0.25 MP
       - "medium": 1.5 MP
       - "hd": 4 MP
       - "50mp": 50 MP
 
-    Chỉ resize nếu diện tích ảnh gốc lớn hơn diện tích mục tiêu (tránh upscaling).
+    Only resize if original image area is larger than target area (avoid upscaling).
 
-    :param original_size: Tuple (width, height) của ảnh gốc.
-    :param size_param: Tham số size dạng chuỗi.
-    :return: Tuple (new_width, new_height) nếu cần resize, hoặc None nếu không.
+    :param original_size: Tuple (width, height) of original image.
+    :param size_param: Size parameter as string.
+    :return: Tuple (new_width, new_height) if resize needed, or None if not.
     """
     if not size_param:
         return None
     size_param = size_param.lower().strip()
-    # Nếu các giá trị này, giữ nguyên kích thước gốc.
+    # If these values, keep original size
     if size_param in ["full", "4k", "auto"]:
         return None
     mapping = {
@@ -31,11 +31,11 @@ def compute_target_size(original_size, size_param):
     }
     if size_param not in mapping:
         return None
-    target_mp = mapping[size_param]  # Megapixel mục tiêu
+    target_mp = mapping[size_param]  # Target megapixels
     w, h = original_size
     original_area = w * h
-    target_area = target_mp * 1e6  # Diện tích mục tiêu tính bằng pixel
-    # Chỉ resize nếu ảnh gốc lớn hơn mục tiêu (tránh upscaling)
+    target_area = target_mp * 1e6  # Target area in pixels
+    # Only resize if original image is larger than target (avoid upscaling)
     if original_area <= target_area:
         return None
     scale = (target_area / original_area) ** 0.5
@@ -45,7 +45,7 @@ def compute_target_size(original_size, size_param):
 
 
 def get_output_format(fmt_param):
-    """Trả về định dạng output dưới dạng chữ thường, mặc định 'auto' nếu không có."""
+    """Return output format in lowercase, default to 'auto' if not provided."""
     if not fmt_param:
         return "png"
     return fmt_param.lower()

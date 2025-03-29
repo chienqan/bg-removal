@@ -1,8 +1,8 @@
-# config.py: Chứa các cấu hình chung cho dự án
+# config.py: Contains common configurations for the project
 
 import torch
 
-# Cấu hình thiết bị chạy model
+# Configure device for running the model
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 if DEVICE.type == "cuda":
@@ -10,8 +10,8 @@ if DEVICE.type == "cuda":
 else:
     print("No GPU detected, using CPU.")
 
-# Model name từ Hugging Face
+# Model name from Hugging Face
 MODEL_NAME = "ZhengPeng7/BiRefNet"
 
-# Kích thước đầu vào cho model (resize ảnh thành 1024x1024 trước khi đưa vào model)
+# Input size for model (resize image to 1024x1024 before feeding to model)
 MODEL_INPUT_SIZE = (1024, 1024)

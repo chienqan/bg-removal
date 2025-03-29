@@ -1,4 +1,4 @@
-# routes/__init__.py: Đăng ký các blueprint trong thư mục routes
+# routes/__init__.py: Register blueprints in the routes directory
 
 from flask import Blueprint
 from routes.remove_bg import remove_bg_bp

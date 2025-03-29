@@ -4,8 +4,8 @@ BG-Remover is a Flask-based API for background removal using the BiRefNet model 
 
 ## Features
 
-- **Input Options:**
-  - `image_file`: Binary file upload (multipart/form-data)
+- **Input Options (form-data only):**
+  - `image_file`: Binary file upload
   - `image_file_b64`: Base64-encoded image string
   - `image_url`: URL to an image
 
@@ -83,9 +83,9 @@ python app.py
 ```
 
 ## Testing the API with cURL
-Below are some example cURL commands to test the API with different input parameters.
+Below are example cURL commands to test the API with different input parameters.
 
-1. ** Test with image_file (multipart/form-data)**
+1. **Test with image_file (multipart/form-data)**
 
 ```bash
 curl -X POST http://localhost:5000/remove-bg \
@@ -95,25 +95,27 @@ curl -X POST http://localhost:5000/remove-bg \
   -o output_image_file.png
 ```
 
-2. **Test with image_file_b64 (JSON payload)**
+2. **Test with image_file_b64 (form-data)**
 
 First, encode your image to Base64:
 ```bash
 base64 /path/to/your/test_image.jpg > image.txt
 ```
-Then, use the Base64 string from image.txt in the JSON payload:
+Then, use the Base64 string from image.txt in the form-data:
 ```bash
 curl -X POST http://localhost:5000/remove-bg \
-  -H "Content-Type: application/json" \
-  -d '{"image_file_b64": "YOUR_BASE64_ENCODED_STRING_HERE", "size": "hd", "format": "jpg"}' \
+  -F "image_file_b64=$(cat image.txt)" \
+  -F "size=hd" \
+  -F "format=jpg" \
   -o output_image_file_b64.jpg
 ```
 
-3. **Test with image_url (JSON payload)**
+3. **Test with image_url (form-data)**
 ```bash
 curl -X POST http://localhost:5000/remove-bg \
-  -H "Content-Type: application/json" \
-  -d '{"image_url": "https://example.com/test_image.jpg", "size": "preview", "format": "auto"}' \
+  -F "image_url=https://example.com/test_image.jpg" \
+  -F "size=preview" \
+  -F "format=auto" \
   -o output_image_url.png
 ```
 

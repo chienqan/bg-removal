@@ -16,29 +16,20 @@ to_pil = transforms.ToPILImage()
 @remove_bg_bp.route("/remove-bg", methods=["POST"])
 def remove_bg():
     try:
-        # Lấy ảnh đầu vào từ request
+        # Get input image from request
         original_image = get_input_image(request)
         orig_size = original_image.size
 
-        # Lấy các tham số "size" và "format"
-        # Nếu không có, thì không xử lý resize và định dạng mặc định là png.
-        if request.content_type.startswith("multipart/form-data"):
-            size_param = request.form.get("size")  # Không có default
-            fmt_param = request.form.get("format")   # Không có default
-        elif request.is_json:
-            json_data = request.get_json()
-            size_param = json_data.get("size")
-            fmt_param = json_data.get("format")
-        else:
-            size_param = None
-            fmt_param = None
+        # Get "size" and "format" parameters from form-data
+        size_param = request.form.get("size")  # No default
+        fmt_param = request.form.get("format")   # No default
 
-        # Tính kích thước mục tiêu dựa trên ảnh gốc và tham số size.
+        # Calculate target size based on original image and size parameter
         target_size = compute_target_size(orig_size, size_param) if size_param else None
-        # Định dạng output: nếu không có thì mặc định "png"
+        # Output format: defaults to "png" if not provided
         out_format = get_output_format(fmt_param) if fmt_param else "png"
 
-        # Chuyển đổi ảnh cho model: resize thành MODEL_INPUT_SIZE, chuyển thành tensor và chuẩn hóa
+        # Convert image for model: resize to MODEL_INPUT_SIZE, convert to tensor and normalize
         transform_image = transforms.Compose([
             transforms.Resize(MODEL_INPUT_SIZE),
             transforms.ToTensor(),
@@ -49,22 +40,22 @@ def remove_bg():
         if DEVICE.type == "cuda":
             input_tensor = input_tensor.half()
 
-        # Gọi model, lấy output cuối cùng và áp dụng sigmoid để có mask từ 0 đến 1
+        # Call model, get final output and apply sigmoid to get mask from 0 to 1
         with torch.no_grad():
             preds = birefnet_model(input_tensor)[-1].sigmoid().cpu()
         mask_tensor = preds[0].squeeze(0)
         mask_image = to_pil(mask_tensor)
         mask_image = mask_image.resize(orig_size, Image.LANCZOS)
 
-        # Tạo ảnh kết quả: thêm kênh alpha từ mask vào ảnh gốc
+        # Create result image: add alpha channel from mask to original image
         output_image = original_image.copy()
         output_image.putalpha(mask_image)
 
-        # Nếu có target_size (user cung cấp tham số size) thì resize ảnh đầu ra
+        # If target_size is provided (user provided size parameter), resize output image
         if target_size is not None:
             output_image = output_image.resize(target_size, Image.LANCZOS)
 
-        # Xử lý định dạng output
+        # Handle output format
         if out_format == "jpg":
             final_img = output_image.convert("RGB")
             out_ext = "jpg"
