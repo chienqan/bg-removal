@@ -1,0 +1,99 @@
+{
+  "info": {
+    "name": "Background Removal API",
+    "description": "Collection for testing background removal API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{host}}:{{port}}/health",
+        "description": "Checks if the API is healthy and operational"
+      },
+      "response": []
+    },
+    {
+      "name": "Ping Test",
+      "request": {
+        "method": "GET",
+        "url": "{{host}}:{{port}}/ping",
+        "description": "Simple ping endpoint to verify API connectivity"
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Background - File Upload",
+      "request": {
+        "method": "POST",
+        "url": "{{host}}:{{port}}/remove-bg",
+        "description": "Remove background from an image using direct file upload",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "image_file",
+              "type": "file",
+              "src": "./test_images/adidas.jpeg",
+              "description": "Image file to process"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Background - URL",
+      "request": {
+        "method": "POST",
+        "url": "{{host}}:{{port}}/remove-bg",
+        "description": "Remove background from an image using a URL",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "image_url",
+              "value": "https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg",
+              "description": "URL to an image"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Remove Background - Base64",
+      "request": {
+        "method": "POST",
+        "url": "{{host}}:{{port}}/remove-bg",
+        "description": "Remove background from an image using base64 encoded data",
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "image_file_b64",
+              "value": "{{base64_image}}",
+              "description": "Base64 encoded image"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "host",
+      "value": "http://localhost"
+    },
+    {
+      "key": "port",
+      "value": "5000"
+    },
+    {
+      "key": "base64_image",
+      "value": "YOUR_BASE64_ENCODED_IMAGE"
+    }
+  ]
+}
