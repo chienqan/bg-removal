@@ -44,23 +44,7 @@ def create_app():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[logging.StreamHandler(sys.stdout)]
     )
-    
-    # Configure Flask app logger specifically
-    app.logger.handlers = []
-    for handler in logging.getLogger().handlers:
-        app.logger.addHandler(handler)
-    app.logger.setLevel(getattr(logging, log_level))
-    
-    # Add request logger middleware
-    @app.before_request
-    def log_request_info():
-        app.logger.debug(f"Request: {request.method} {request.path} from {request.remote_addr}")
-    
-    @app.after_request
-    def log_response_info(response):
-        app.logger.debug(f"Response: {request.method} {request.path} - Status: {response.status_code}")
-        return response
-    
+   
     app.logger.info("Initializing Background Removal Server...")
     
     # Load model
@@ -122,6 +106,3 @@ if __name__ == "__main__":
     
     # Run the server
     app.run(host=args.host, port=args.port, debug=args.debug)
-
-# Create 'app' variable for Gunicorn/PM2
-app = create_app()
