@@ -106,3 +106,6 @@ if __name__ == "__main__":
     
     # Run the server
     app.run(host=args.host, port=args.port, debug=args.debug)
+
+# Create 'app' variable for Gunicorn/PM2
+app = create_app()
