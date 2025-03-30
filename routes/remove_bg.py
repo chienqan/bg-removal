@@ -27,8 +27,8 @@ def remove_bg():
             input_method = "base64"
             current_app.logger.info(f"[{g.request_id}] Processing base64 image ({len(request.form['image_file_b64'])//1024} KB)")
         else:
-            current_app.logger.warning(f"[{g.request_id}] Invalid request: no image provided")
-            return jsonify({"error": "No image provided"}), 400
+            current_app.logger.warning(f"[{g.request_id}] Invalid request: no image provided. Please use form-data with one of: image_file, image_file_b64, or image_url")
+            return jsonify({"error": "No image provided. Please use form-data with one of: image_file, image_file_b64, or image_url"}), 400
             
         # Get input image from request
         image_load_start = time.time()

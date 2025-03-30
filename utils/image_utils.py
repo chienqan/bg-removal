@@ -40,7 +40,7 @@ def get_input_image(req):
         try:
             # Add a proper User-Agent header to comply with website policies
             headers = {
-                "User-Agent": "BgRemoverAPI/1.0 (github.com/deltora-ai/bg-remover; contact@deltora-ai.com)"
+                "User-Agent": "BgRemoverAPI/1.0 (github.com/deltora-ai/bg-removal; hello@deltora.ai)"
             }
             resp = requests.get(image_url, headers=headers)
             resp.raise_for_status()
@@ -49,7 +49,7 @@ def get_input_image(req):
             raise ValueError(f"Error reading image_url: {str(e)}")
 
     if not sources:
-        raise ValueError("No image source provided.")
+        raise ValueError("No image source provided. Please use form-data with one of: image_file, image_file_b64, or image_url")
 
     # Priority: image_file > image_file_b64 > image_url
     if "image_file" in sources:

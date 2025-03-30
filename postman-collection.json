@@ -50,8 +50,8 @@
         "url": "{{host}}:{{port}}/remove-bg",
         "description": "Remove background from an image using a URL",
         "body": {
-          "mode": "urlencoded",
-          "urlencoded": [
+          "mode": "formdata",
+          "formdata": [
             {
               "key": "image_url",
               "value": "https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg",
@@ -69,8 +69,8 @@
         "url": "{{host}}:{{port}}/remove-bg",
         "description": "Remove background from an image using base64 encoded data",
         "body": {
-          "mode": "urlencoded",
-          "urlencoded": [
+          "mode": "formdata",
+          "formdata": [
             {
               "key": "image_file_b64",
               "value": "{{base64_image}}",
