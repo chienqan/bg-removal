@@ -1,6 +1,6 @@
-# BG-Remover API
+# Background Removal API
 
-BG-Remover is a Flask-based API for background removal using the BiRefNet model from Hugging Face via the Transformers library. The API accepts image inputs in multiple forms and returns PNG images with transparency.
+BG-Removal is a Flask-based API for background removal using the BiRefNet model from Hugging Face via the Transformers library. The API accepts image inputs in multiple forms and returns PNG images with transparency.
 
 ## Features
 
@@ -16,7 +16,7 @@ BG-Remover is a Flask-based API for background removal using the BiRefNet model 
 ## Project Structure
 
 ```commandline
-bg-remover/
+bg-removal/
 ├── app.py
 ├── config.py
 ├── requirements.txt
@@ -49,8 +49,8 @@ bg-remover/
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/yourusername/bg-remover.git
-cd bg-remover
+git clone https://github.com/yourusername/bg-removal.git
+cd bg-removal
 ```
 
 2. **Create a virtual environment and activate it:**

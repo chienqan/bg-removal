@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: 'bg-remover',
+    name: 'bg-removal',
     script: 'gunicorn',
     args: '--bind 0.0.0.0:5000 --log-level=info --access-logfile=./logs/gunicorn_access.log --error-logfile=./logs/gunicorn_error.log app:app',
     interpreter: './venv/bin/python3',
