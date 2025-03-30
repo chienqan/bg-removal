@@ -40,7 +40,7 @@ def get_input_image(req):
         try:
             # Add a proper User-Agent header to comply with website policies
             headers = {
-                "User-Agent": "BgRemovalAPI/1.0 (github.com/deltoraai/bg-removal; hello@deltora.ai)"
+                "User-Agent": "BgRemovalAPI/1.0 (github.com/trinexai/bg-removal; hello@trinex.ai)"
             }
             resp = requests.get(image_url, headers=headers)
             resp.raise_for_status()
