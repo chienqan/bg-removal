@@ -30,19 +30,20 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 def setup_production_logging(app):
     """Configure enhanced logging specifically for production environment"""
+    # Ensure logs directory exists
+    os.makedirs('logs', exist_ok=True)
+    
     # Create request logger
     request_logger = logging.getLogger('request_logger')
     # Clear any existing handlers to avoid duplicates
     if request_logger.handlers:
         request_logger.handlers = []
     request_logger.setLevel(logging.INFO)
-    
-    # Ensure logs directory exists
-    os.makedirs('logs', exist_ok=True)
+    request_logger.propagate = False  # Prevent duplicate logs
     
     # Create a file handler for API requests specifically
     api_log_file = os.path.join('logs', 'api_requests.log')
-    file_handler = logging.FileHandler(api_log_file)
+    file_handler = logging.FileHandler(api_log_file, mode='a')
     file_handler.setLevel(logging.INFO)
     file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(file_formatter)
@@ -52,6 +53,9 @@ def setup_production_logging(app):
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(file_formatter)
     request_logger.addHandler(stdout_handler)
+    
+    # Verify logger is working by writing a test message
+    request_logger.info("API request logging initialized")
     
     app.logger.info(f"Production request logging enabled → logs/api_requests.log")
     return request_logger
@@ -81,17 +85,29 @@ def create_app():
     is_production = os.environ.get('FLASK_ENV', '').lower() == 'production'
     app.config['IS_PRODUCTION'] = is_production
     
+    # Force production for testing if needed
+    # is_production = True
+    # app.config['IS_PRODUCTION'] = True
+    
     # Set up request logger - production has enhanced logging
     if is_production:
-        request_logger = setup_production_logging(app)
-        app.config['REQUEST_LOGGER'] = request_logger
-        app.logger.info("Running in PRODUCTION mode with enhanced request logging")
+        try:
+            request_logger = setup_production_logging(app)
+            app.config['REQUEST_LOGGER'] = request_logger
+            # Test the logger directly
+            with open('logs/api_requests.log', 'a') as f:
+                f.write(f"{datetime.now()} - Direct test write to log file\n")
+            app.logger.info("Running in PRODUCTION mode with enhanced request logging")
+        except Exception as e:
+            app.logger.error(f"Failed to set up production logging: {str(e)}")
+            import traceback
+            app.logger.error(traceback.format_exc())
     else:
         app.logger.info("Running in DEVELOPMENT mode")
    
     app.logger.info("Initializing Background Removal Server...")
     
-    # Add request ID and start time to each request - only in production
+    # Add request ID and start time to each request
     @app.before_request
     def before_request():
         # Always set request ID and timing info for use in route handlers
@@ -99,9 +115,17 @@ def create_app():
         g.start_time = time.time()
         g.request_timestamp = datetime.utcnow().isoformat()
         
-        # But only log in production mode
+        # Only log in production mode
         if app.config.get('IS_PRODUCTION', False):
-            app.logger.debug(f"[{g.request_id}] Request started: {request.method} {request.path} from {request.remote_addr}")
+            app.logger.info(f"[{g.request_id}] Request started: {request.method} {request.path} from {request.remote_addr}")
+            
+            # Also log to the dedicated request file directly for reliability
+            try:
+                message = f"{datetime.now().isoformat()} - INFO - [{g.request_id}] Request started: {request.method} {request.path} from {request.remote_addr}\n"
+                with open('logs/api_requests.log', 'a') as f:
+                    f.write(message)
+            except Exception as e:
+                app.logger.error(f"Failed to write to api_requests.log: {str(e)}")
     
     # Log all requests - only in production
     @app.after_request
@@ -118,18 +142,39 @@ def create_app():
             # Determine input type and size
             input_type = None
             input_size = None
+            body_summary = None
+            
             if request.files and 'image_file' in request.files:
                 input_type = 'file_upload'
                 input_size = len(request.files['image_file'].read()) if request.files['image_file'] else 0
                 # Reset file pointer after reading
                 if request.files['image_file']:
                     request.files['image_file'].seek(0)
+                body_summary = f"File upload: {input_size} bytes"
             elif 'image_url' in request.form:
                 input_type = 'url'
                 input_size = len(request.form['image_url'])
+                # Truncate long URLs
+                url = request.form['image_url']
+                body_summary = f"URL: {url[:100]}{'...' if len(url) > 100 else ''}"
             elif 'image_file_b64' in request.form:
                 input_type = 'base64'
                 input_size = len(request.form['image_file_b64'])
+                # Truncate long base64 strings
+                b64 = request.form['image_file_b64']
+                body_summary = f"Base64: {b64[:50]}{'...' if len(b64) > 50 else ''}"
+            else:
+                # For other request types, try to get a summary of the body
+                try:
+                    if request.is_json:
+                        body = request.get_json()
+                        body_summary = json.dumps(body)[:200] + ('...' if len(json.dumps(body)) > 200 else '')
+                    elif request.form:
+                        body_summary = str(dict(request.form))[:200] + ('...' if len(str(dict(request.form))) > 200 else '')
+                    elif request.data:
+                        body_summary = f"Raw data: {len(request.data)} bytes"
+                except Exception as e:
+                    body_summary = f"Error reading body: {str(e)}"
             
             # Create a log entry with all important information
             log_data = {
@@ -143,16 +188,25 @@ def create_app():
                 'user_agent': request.headers.get('User-Agent', ''),
                 'input_type': input_type,
                 'input_size': input_size,
+                'body_summary': body_summary,
                 'referrer': request.referrer,
                 'content_length': response.content_length
             }
             
             # Log to the dedicated request logger
+            log_message = json.dumps(log_data)
             if hasattr(app.config, 'REQUEST_LOGGER'):
-                app.config['REQUEST_LOGGER'].info(json.dumps(log_data))
+                app.config['REQUEST_LOGGER'].info(log_message)
+            
+            # Direct file write as a fallback/additional logging method
+            try:
+                with open('logs/api_requests.log', 'a') as f:
+                    f.write(f"{datetime.now().isoformat()} - INFO - {log_message}\n")
+            except Exception as e:
+                app.logger.error(f"Failed to write to api_requests.log: {str(e)}")
             
             # Also log a summary to the standard Flask logger
-            app.logger.info(f"Request {g.request_id}: {request.method} {request.path} {response.status_code} - {duration:.4f}s")
+            app.logger.info(f"[{g.request_id}] Request ended: {request.method} {request.path} {response.status_code} - {duration:.4f}s")
             
         return response
     
