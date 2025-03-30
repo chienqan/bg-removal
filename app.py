@@ -13,7 +13,7 @@ import os
 import sys
 import argparse
 import logging
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 import warnings
@@ -38,11 +38,28 @@ def create_app():
     CORS(app)
     
     # Configure logging
+    log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
     logging.basicConfig(
-        level=logging.INFO,
+        level=getattr(logging, log_level),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[logging.StreamHandler(sys.stdout)]
     )
+    
+    # Configure Flask app logger specifically
+    app.logger.handlers = []
+    for handler in logging.getLogger().handlers:
+        app.logger.addHandler(handler)
+    app.logger.setLevel(getattr(logging, log_level))
+    
+    # Add request logger middleware
+    @app.before_request
+    def log_request_info():
+        app.logger.debug(f"Request: {request.method} {request.path} from {request.remote_addr}")
+    
+    @app.after_request
+    def log_response_info(response):
+        app.logger.debug(f"Response: {request.method} {request.path} - Status: {response.status_code}")
+        return response
     
     app.logger.info("Initializing Background Removal Server...")
     
@@ -75,12 +92,18 @@ def parse_arguments():
                         help="Host to bind the server to (default: 0.0.0.0 or HOST env var)")
     parser.add_argument("--debug", action="store_true",
                         help="Run server in debug mode")
+    parser.add_argument("--log-level", type=str, default=os.environ.get("LOG_LEVEL", "INFO"),
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                        help="Set logging level (default: INFO)")
     
     return parser.parse_args()
 
 if __name__ == "__main__":
     # Parse command line arguments
     args = parse_arguments()
+    
+    # Set logging level from arguments
+    os.environ["LOG_LEVEL"] = args.log_level
     
     # Create the Flask app
     app = create_app()
@@ -92,6 +115,7 @@ if __name__ == "__main__":
     ======================================================
     🌐 Server running at: http://{args.host}:{args.port}
     🔧 Debug mode: {'✅ Enabled' if args.debug else '❌ Disabled'}
+    📋 Log level: {os.environ.get('LOG_LEVEL', 'INFO')}
     🛠️  Press Ctrl+C to stop the server
     ======================================================
     """)
